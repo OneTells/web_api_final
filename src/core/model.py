@@ -27,7 +27,7 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[str] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    data: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=text("(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))")
     )

@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import BaseModel
 
 
@@ -20,8 +18,3 @@ class UpdateProduct(BaseModel):
     name: str | None = None
     url: str | None = None
     price: int | None = None
-
-
-class EventModel(BaseModel):
-    description: str
-    content: Any

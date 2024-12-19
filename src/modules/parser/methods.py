@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from core.methods import async_engine
 from core.model import Product
+from modules.api.methods import create_event
 from modules.parser.schemes import ProductModel
 
 
@@ -122,6 +123,8 @@ async def run_parser():
                         )
                     )
                     await session.commit()
+
+                await create_event('Парсинг каталога успешно завершен')
 
                 await sleep(10)
 
