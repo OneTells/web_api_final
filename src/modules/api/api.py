@@ -43,7 +43,7 @@ async def create_product(product: NewProduct, session: Annotated[AsyncSession, D
     return JSONResponse(
         content={"message": "Продукт добавлен", "id": id_},
         background=BackgroundTask(
-            create_event, f'Создание нового продукта Url: {product.url}, Name: {product.name}, Price: {product.price}'
+            create_event, f'Создан новый продукт. Url: {product.url}, Name: {product.name}, Price: {product.price}'
         )
     )
 
@@ -75,7 +75,7 @@ async def delete_products(session: Annotated[AsyncSession, Depends(get_async_ses
 
     return JSONResponse(
         content={"message": "Все данные удалены"},
-        background=BackgroundTask(create_event, 'Удаление всех продуктов')
+        background=BackgroundTask(create_event, 'Удалены все продукты')
     )
 
 
@@ -92,7 +92,7 @@ async def get_product(product_id: int, session: Annotated[AsyncSession, Depends(
         return JSONResponse(
             content={"message": "Продукт не найден"}, status_code=404,
             background=BackgroundTask(
-                create_event, f'Продукт не найден ID: {product_id}'
+                create_event, f'Продукт не был найден. ID: {product_id}'
             )
         )
 
@@ -104,7 +104,7 @@ async def get_product(product_id: int, session: Annotated[AsyncSession, Depends(
             url=f'https://www.maxidom.ru/catalog/{result[1]}/'
         ).model_dump(),
         background=BackgroundTask(
-            create_event, f'Получен продукт ID: {product_id}, Url: {result[1]}, Name: {result[2]}, Price: {result[3]}'
+            create_event, f'Получен продукт. ID: {product_id}, Url: {result[1]}, Name: {result[2]}, Price: {result[3]}'
         )
     )
 
@@ -123,7 +123,12 @@ async def update_product(
     result = response.first()
 
     if not result:
-        return JSONResponse({"message": "Продукт не найден"}, status_code=404)
+        return JSONResponse(
+            content={"message": "Продукт не найден"}, status_code=404,
+            background=BackgroundTask(
+                create_event, f'При обновлении продукт не был найден. ID: {product_id}'
+            )
+        )
 
     obj = dict(
         slug=product.url.removeprefix('https://www.maxidom.ru/catalog/').removesuffix('/') if product.url else result[1],
@@ -140,7 +145,7 @@ async def update_product(
 
     return JSONResponse(
         content={"message": "Продукт обновлен", "id": product_id},
-        background=BackgroundTask(create_event, f'Обновление продукта ID: {product_id}')
+        background=BackgroundTask(create_event, f'Продукт обновлен. ID: {product_id}')
     )
 
 
@@ -154,7 +159,7 @@ async def delete_product(product_id: int, session: Annotated[AsyncSession, Depen
     if not response.first():
         return JSONResponse(
             content={"message": "Продукт не найден"}, status_code=404,
-            background=BackgroundTask(create_event, f'При удалении продукт не найден ID: {product_id}')
+            background=BackgroundTask(create_event, f'При удалении продукт не был найден ID: {product_id}')
         )
 
     await session.execute(delete(Product).where(product_id == Product.id))
@@ -162,7 +167,7 @@ async def delete_product(product_id: int, session: Annotated[AsyncSession, Depen
 
     return JSONResponse(
         content={"message": "Продукт удален"},
-        background=BackgroundTask(create_event, f'Удаление продукта ID: {product_id}')
+        background=BackgroundTask(create_event, f'Продукт удален. ID: {product_id}')
     )
 
 
