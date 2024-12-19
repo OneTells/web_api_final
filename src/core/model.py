@@ -2,7 +2,6 @@ from datetime import datetime
 
 from sqlalchemy import Integer, Text, UniqueConstraint, TIMESTAMP, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
-from sqlalchemy.sql.functions import now
 
 
 class Base(DeclarativeBase):
@@ -29,4 +28,6 @@ class Event(Base):
 
     id: Mapped[str] = mapped_column(Integer, primary_key=True, autoincrement=True)
     data: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False, server_default=now())
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=text("(STRFTIME('%Y-%m-%d %H:%M:%f', 'NOW'))")
+    )

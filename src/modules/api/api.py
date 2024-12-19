@@ -8,6 +8,7 @@ from sqlalchemy.dialects.sqlite import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.background import BackgroundTask
 from starlette.responses import JSONResponse
+from starlette.websockets import WebSocketDisconnect
 
 from core.model import Product, Event
 from modules.api.methods import get_async_session, create_event
@@ -152,16 +153,20 @@ async def delete_product(product_id: int, session: Annotated[AsyncSession, Depen
 @app.websocket('/events/ws')
 async def ws_events(websocket: WebSocket, session: Annotated[AsyncSession, Depends(get_async_session)]):
     await websocket.accept()
-    last_datetime = datetime.now(UTC)
 
-    while True:
-        response = await session.execute(
-            select(Event.data)
-            .where(last_datetime <= Event.created_at)
-        )
-        last_datetime = datetime.now(UTC)
+    last_time_point = datetime.now(UTC)
 
-        for event in response.all():
-            await websocket.send_text(event[0])
+    try:
+        while True:
+            response = await session.execute(
+                select(Event.created_at, Event.data)
+                .where(last_time_point <= Event.created_at)
+            )
 
-        await sleep(5)
+            for created_at, data in response.all():
+                await websocket.send_text(data)
+                last_time_point = created_at
+
+            await sleep(0.1)
+    except WebSocketDisconnect:
+        pass
